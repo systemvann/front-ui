@@ -1,20 +1,20 @@
 import React from 'react';
 
-import ActivitiesPage from '../../pages/ActivitiesPage';
-import AllowancePage from '../../pages/AllowancePage';
-import AssignmentPage from '../../pages/AssignmentPage';
-import AttendancePage from '../../pages/AttendancePage';
-import CertificatesPage from '../../pages/CertificatesPage';
-import EvaluationPage from '../../pages/EvaluationPage';
-import FeedbackPage from '../../pages/FeedbackPage';
-import InvitationsPage from '../../pages/InvitationsPage';
-import LeaveRequestPage from '../../pages/LeaveRequestPage';
-import OffboardingPage from '../../pages/OffboardingPage';
-import OnboardingPage from '../../pages/OnboardingPage';
-import ProfilePage from '../../pages/ProfilePage';
-import SystemSettingsPage from '../../pages/SystemSettingsPage';
-import TrainingPage from '../../pages/TrainingPage';
-import WithdrawalPage from '../../pages/WithdrawalPage';
+import ActivitiesPage from '../../pages/intern/ActivitiesPage';
+import AllowancePage from '../../pages/intern/AllowancePage';
+import AssignmentPage from '../../pages/intern/AssignmentPage';
+import AttendancePage from '../../pages/intern/AttendancePage';
+import CertificatesPage from '../../pages/intern/CertificatesPage';
+import EvaluationPage from '../../pages/intern/EvaluationPage';
+import FeedbackPage from '../../pages/intern/FeedbackPage';
+import InvitationsPage from '../../pages/admin/InvitationsPage';
+import LeaveRequestPage from '../../pages/shared/LeaveRequestPage';
+import OffboardingPage from '../../pages/intern/OffboardingPage';
+import OnboardingPage from '../../pages/intern/OnboardingPage';
+import ProfilePage from '../../pages/intern/ProfilePage';
+import SystemSettingsPage from '../../pages/admin/SystemSettingsPage';
+import TrainingPage from '../../pages/intern/TrainingPage';
+import WithdrawalPage from '../../pages/intern/WithdrawalPage';
 
 import { Language, UserProfile, UserRole } from '@/types';
 

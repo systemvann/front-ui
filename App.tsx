@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import LoginPage from './pages/LoginPage';
+import LoginPage from './pages/shared/LoginPage';
 import { Sparkles } from 'lucide-react';
 import { UserProfile, UserRole, Language } from './types';
 import { renderAppPage } from './roles/renderAppPage';
