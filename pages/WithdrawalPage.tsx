@@ -15,7 +15,7 @@ import {
   ArrowLeft,
   Info
 } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 interface WithdrawalPageProps {
   lang: Language;

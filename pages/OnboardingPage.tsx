@@ -14,7 +14,7 @@ import {
   Upload,
   Clock
 } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 interface RoadmapStep {
   id: string;

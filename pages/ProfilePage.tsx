@@ -30,7 +30,7 @@ import {
   Trash2,
   RefreshCw
 } from 'lucide-react';
-import { UserProfile, Supervisor, DocumentStatus, Language } from '../types';
+import { UserProfile, Supervisor, DocumentStatus, Language } from '@/types';
 
 const userData: UserProfile = {
   id: 'USR-2024-001',

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Briefcase, User, ShieldCheck, Settings, Mail, ArrowLeft, Sparkles, Calendar, UserCheck, ChevronRight, CheckCircle2 } from 'lucide-react';
-import { UserProfile, UserRole } from '../types';
+import { UserProfile, UserRole } from '@/types';
 
 interface LoginPageProps {
   onLogin: (user: UserProfile) => void;

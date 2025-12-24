@@ -54,7 +54,7 @@ import {
   Circle
 } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 type SettingsTab = 'onboarding' | 'allowance' | 'access';
 

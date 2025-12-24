@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Camera, Mail, GraduationCap, Phone, MapPin } from 'lucide-react';
-import { UserProfile, Language } from '../types';
+import { UserProfile, Language } from '@/types';
 
 interface ProfileCardProps {
   user: UserProfile;

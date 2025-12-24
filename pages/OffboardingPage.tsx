@@ -22,7 +22,7 @@ import {
   Info,
   Check
 } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 interface OffboardingTask {
   id: string;

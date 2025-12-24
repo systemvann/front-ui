@@ -24,7 +24,7 @@ import {
   Zap,
   ChevronDown
 } from 'lucide-react';
-import { Language, SubTask, TaskLog } from '../types';
+import { Language, SubTask, TaskLog } from '@/types';
 
 interface Project {
   id: string;

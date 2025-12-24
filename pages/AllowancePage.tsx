@@ -13,7 +13,7 @@ import {
   Coins,
   Receipt
 } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 interface AllowanceRecord {
   id: string;

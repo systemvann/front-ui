@@ -21,7 +21,7 @@ import {
   Save,
   Clock
 } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 interface UniDocument {
   id: string;

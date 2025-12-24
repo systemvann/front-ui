@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   ChevronLeft, 
@@ -12,7 +11,7 @@ import {
   PlaneTakeoff,
   UserX
 } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 interface ActivityEvent {
   id: string;

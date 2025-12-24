@@ -20,7 +20,7 @@ import {
   Briefcase,
   Users
 } from 'lucide-react';
-import { UserRole } from '../types';
+import { UserRole } from '@/types';
 
 const InvitationsPage: React.FC = () => {
   const [isCopied, setIsCopied] = useState(false);

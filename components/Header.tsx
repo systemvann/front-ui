@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Search, Bell, MapPin, Menu, Languages } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 interface HeaderProps {
   onMenuToggle?: () => void;

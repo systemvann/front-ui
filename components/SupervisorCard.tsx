@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Mail, Briefcase, Phone, MessageSquareMore, Copy } from 'lucide-react';
-import { Supervisor, Language } from '../types';
+import { Supervisor, Language } from '@/types';
 
 interface SupervisorCardProps {
   supervisor: Supervisor;

@@ -1,9 +1,9 @@
 import React from 'react';
 
-import AdminDashboard from '../../pages/AdminDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import { renderCommonPage } from '../common/renderCommonPage';
 
-import { Language, UserProfile, UserRole } from '../../types';
+import { Language, UserProfile, UserRole } from '@/types';
 
 interface RenderAdminPageParams {
   activePage: string;

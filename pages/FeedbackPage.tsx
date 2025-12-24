@@ -22,7 +22,7 @@ import {
   MessageCircle,
   Zap
 } from 'lucide-react';
-import { Language, UserProfile } from '../types';
+import { Language, UserProfile } from '@/types';
 
 interface FeedbackMilestone {
   id: string;

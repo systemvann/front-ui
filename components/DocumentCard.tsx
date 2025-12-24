@@ -1,7 +1,6 @@
-
 import React, { useRef } from 'react';
 import { CheckCircle2, Upload, Loader2 } from 'lucide-react';
-import { DocumentStatus } from '../types';
+import { DocumentStatus } from '@/types';
 
 interface DocumentCardProps {
   doc: DocumentStatus;

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   BarChart3, 
@@ -18,7 +17,7 @@ import {
   Copy,
   ChevronRight as LucideChevronRight
 } from 'lucide-react';
-import { UserProfile, Language } from '../types';
+import { UserProfile, Language } from '@/types';
 
 interface InternDashboardProps {
   user: UserProfile;

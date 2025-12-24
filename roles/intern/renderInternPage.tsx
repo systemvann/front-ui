@@ -1,9 +1,9 @@
 import React from 'react';
 
-import InternDashboard from '../../pages/InternDashboard';
+import InternDashboard from './pages/InternDashboard';
 import { renderCommonPage } from '../common/renderCommonPage';
 
-import { Language, UserProfile, UserRole } from '../../types';
+import { Language, UserProfile, UserRole } from '@/types';
 
 interface RenderInternPageParams {
   activePage: string;

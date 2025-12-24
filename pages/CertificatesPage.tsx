@@ -13,7 +13,7 @@ import {
   ChevronRight,
   Stamp
 } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 interface CertificateItem {
   id: string;

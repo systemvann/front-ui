@@ -11,7 +11,7 @@ import {
   PenTool,
   ArrowRight
 } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 interface TrainingItem {
   id: string;

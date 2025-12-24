@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Language, UserProfile, UserRole } from '../types';
+import { Language, UserProfile, UserRole } from '@/types';
 import { renderAdminPage } from './admin/renderAdminPage';
 import { renderInternPage } from './intern/renderInternPage';
 import { renderSupervisorPage } from './supervisor/renderSupervisorPage';

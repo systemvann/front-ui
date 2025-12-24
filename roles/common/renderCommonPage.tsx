@@ -16,7 +16,7 @@ import SystemSettingsPage from '../../pages/SystemSettingsPage';
 import TrainingPage from '../../pages/TrainingPage';
 import WithdrawalPage from '../../pages/WithdrawalPage';
 
-import { Language, UserProfile, UserRole } from '../../types';
+import { Language, UserProfile, UserRole } from '@/types';
 
 interface RenderCommonPageParams {
   activePage: string;

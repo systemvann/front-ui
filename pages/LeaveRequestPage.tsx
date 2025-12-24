@@ -17,7 +17,7 @@ import {
   AlertCircle,
   ShieldCheck
 } from 'lucide-react';
-import { Language, UserRole, LeaveRequest, LeaveType } from '../types';
+import { Language, UserRole, LeaveRequest, LeaveType } from '@/types';
 
 interface LeaveRequestPageProps {
   lang: Language;

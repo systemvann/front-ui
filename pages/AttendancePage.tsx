@@ -13,7 +13,7 @@ import {
   Home,
   Building2
 } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 type WorkMode = 'WFH' | 'WFO';
 

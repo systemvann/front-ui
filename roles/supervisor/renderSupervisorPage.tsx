@@ -3,7 +3,7 @@ import React from 'react';
 import SupervisorDashboard from './pages/SupervisorDashboard';
 import { renderCommonPage } from '../common/renderCommonPage';
 
-import { Language, UserProfile, UserRole } from '../../types';
+import { Language, UserProfile, UserRole } from '@/types';
 
 interface RenderSupervisorPageParams {
   activePage: string;

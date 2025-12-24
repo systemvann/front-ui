@@ -59,7 +59,7 @@ import {
   Building2,
   Home
 } from 'lucide-react';
-import { UserProfile, PerformanceMetrics, Language, SubTask } from '../../../types';
+import { UserProfile, PerformanceMetrics, Language, SubTask } from '@/types';
 import InternListSection from '../components/InternListSection';
 import InternDeepDiveLayout, { SupervisorDeepDiveTab } from '../components/InternDeepDiveLayout';
 import AttendanceTab from '../components/AttendanceTab';
