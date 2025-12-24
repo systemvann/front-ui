@@ -84,7 +84,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <div>
               {/* "Outside" branding with extra wide spacing and black weight - Subtitle removed */}
               <h1 className="text-white font-black text-4xl leading-none tracking-[0.15em]">
-                intern<span className="text-blue-500">Plus</span>
+                intern<span className="text-blue-500">Plus test</span>
               </h1>
             </div>
           </div>
