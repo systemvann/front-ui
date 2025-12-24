@@ -13,7 +13,7 @@ import ProfilePage from '@/pages/intern/ProfilePage';
 import TrainingPage from '@/pages/intern/TrainingPage';
 import WithdrawalPage from '@/pages/intern/WithdrawalPage';
 
-import InternDashboard from './pages/InternDashboard';
+import InternDashboard from '@/pages/intern/InternDashboard';
 
 import { Language, UserProfile, UserRole } from '@/types';
 import { PageId } from '@/pageTypes';
