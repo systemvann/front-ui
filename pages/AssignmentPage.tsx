@@ -1,0 +1,704 @@
+
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Layers, 
+  ArrowRight, 
+  Plus, 
+  X, 
+  Clock, 
+  Calendar, 
+  CheckCircle2, 
+  Repeat, 
+  Circle, 
+  CalendarDays,
+  Upload,
+  FileText,
+  Trash2,
+  RefreshCw,
+  Play,
+  Square,
+  AlertCircle,
+  Timer,
+  ChevronRight,
+  Edit2,
+  Zap,
+  ChevronDown
+} from 'lucide-react';
+import { Language, SubTask, TaskLog } from '../types';
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  status: 'IN PROGRESS' | 'TODO';
+  date: string;
+  tasks: SubTask[];
+}
+
+interface AssignmentPageProps {
+  lang: Language;
+}
+
+const AssignmentPage: React.FC<AssignmentPageProps> = ({ lang }) => {
+  const [projects, setProjects] = useState<Project[]>([
+    {
+      id: 'p1',
+      title: 'User Flow Mapping',
+      description: 'Create comprehensive user flows for the new onboarding module.',
+      status: 'IN PROGRESS',
+      date: '2024-11-20',
+      tasks: [
+        { 
+          id: 't1', 
+          title: 'Define User Personas', 
+          type: 'SINGLE', 
+          status: 'DONE', 
+          plannedStart: new Date(2024, 10, 18, 9, 0).toISOString(),
+          plannedEnd: new Date(2024, 10, 18, 12, 30).toISOString(),
+          actualEnd: new Date(2024, 10, 18, 12, 15).toISOString(),
+          timeLogs: [{ id: 'l1', startTime: new Date(2024, 10, 18, 9, 0).toISOString(), endTime: new Date(2024, 10, 18, 12, 15).toISOString() }],
+          attachments: ['Personas_v1.pdf', 'Market_Research.pdf'],
+          isSessionActive: false
+        },
+        { 
+          id: 't2', 
+          title: 'Draft Lo-fi Wireframes', 
+          type: 'CONTINUE', 
+          status: 'IN_PROGRESS', 
+          plannedStart: new Date(2024, 10, 19, 13, 45).toISOString(),
+          plannedEnd: new Date(2024, 10, 21, 18, 0).toISOString(),
+          timeLogs: [{ id: 'l2', startTime: new Date(2024, 10, 19, 13, 45).toISOString(), endTime: new Date(2024, 10, 19, 17, 30).toISOString() }],
+          attachments: [],
+          isSessionActive: false
+        },
+        { 
+          id: 't3', 
+          title: 'High-Fidelity Prototyping', 
+          type: 'CONTINUE', 
+          status: 'IN_PROGRESS', 
+          plannedStart: new Date(2024, 10, 22, 9, 0).toISOString(),
+          plannedEnd: new Date(2024, 10, 24, 18, 0).toISOString(),
+          timeLogs: [],
+          attachments: [],
+          isSessionActive: false
+        }
+      ]
+    }
+  ]);
+
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [isPlanningTask, setIsPlanningTask] = useState(false);
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [isExtendingDeadline, setIsExtendingDeadline] = useState<string | null>(null);
+  const [uploadTaskId, setUploadTaskId] = useState<string | null>(null);
+  const [showShiftNotice, setShowShiftNotice] = useState(false);
+  
+  const [newTask, setNewTask] = useState({
+    title: '',
+    type: 'SINGLE' as 'SINGLE' | 'CONTINUE',
+    startDate: new Date().toISOString().split('T')[0],
+    startTime: '09:00',
+    endDate: new Date().toISOString().split('T')[0],
+    endTime: '18:00'
+  });
+
+  const [extensionDate, setExtensionDate] = useState({
+    date: new Date().toISOString().split('T')[0],
+    time: '18:00'
+  });
+
+  const [newProject, setNewProject] = useState({ title: '', description: '' });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectedProject = projects.find(p => p.id === selectedProjectId);
+
+  const calculateTotalWorkTime = (logs: TaskLog[]) => {
+    let totalMs = 0;
+    logs.forEach(log => {
+      const start = new Date(log.startTime).getTime();
+      const end = log.endTime ? new Date(log.endTime).getTime() : new Date().getTime();
+      totalMs += (end - start);
+    });
+    const hours = totalMs / (1000 * 60 * 60);
+    return hours.toFixed(1);
+  };
+
+  const t = {
+    EN: {
+      title: "My Assignments",
+      subtitle: "Review your projects and individual tasks.",
+      createNew: "Create New Project",
+      projectBrief: "PROJECT BRIEF",
+      taskMgmt: "TASK MANAGEMENT",
+      taskTimeline: "Task Timeline & Tracking",
+      planTask: "Plan New Task",
+      saveChanges: "Save Changes",
+      details: "PROJECT DETAILS",
+      taskTitle: "Task Title",
+      taskType: "Tracking Mode",
+      taskDateStart: "Start Target",
+      taskDateEnd: "End Target",
+      confirmTask: "Confirm & Add Task",
+      cancel: "Cancel",
+      uploadTitle: "Task Attachments",
+      uploadSub: "Upload proof of work to finalize",
+      finishBtn: "Complete & Finalize",
+      onTime: "ON TIME",
+      early: "EARLY",
+      delayed: "DELAYED",
+      inProgress: "IN PROGRESS",
+      working: "WORKING NOW",
+      startWork: "Start Session",
+      stopWork: "Pause Session",
+      extend: "Extend Deadline",
+      plannedRange: "Planned Target",
+      shiftMessage: "Subsequent tasks shifted automatically to maintain timeline integrity.",
+      applyExt: "Apply Extension & Shift Timeline"
+    },
+    TH: {
+      title: "งานที่ได้รับมอบหมาย",
+      subtitle: "ตรวจสอบโครงการและงานส่วนตัวของคุณ",
+      createNew: "สร้างโครงการใหม่",
+      projectBrief: "สรุปโครงการ",
+      taskMgmt: "การจัดการงาน",
+      taskTimeline: "ระยะเวลาและการติดตามงาน",
+      planTask: "วางแผนงานใหม่",
+      saveChanges: "บันทึกการเปลี่ยนแปลง",
+      details: "รายละเอียดโครงการ",
+      taskTitle: "ชื่อโครงการ/งาน",
+      taskType: "รูปแบบการติดตาม",
+      taskDateStart: "เริ่มตามแผน",
+      taskDateEnd: "สิ้นสุดตามแผน",
+      confirmTask: "ยืนยันและเพิ่มงาน",
+      cancel: "ยกเลิก",
+      uploadTitle: "สิ่งที่แนบมา",
+      uploadSub: "อัปโหลดหลักฐานเพื่อจบงาน",
+      finishBtn: "จบงาน",
+      onTime: "ตรงเวลา",
+      early: "ก่อนกำหนด",
+      delayed: "ล่าช้า",
+      inProgress: "กำลังดำเนินการ",
+      working: "กำลังทำงาน",
+      startWork: "เริ่มทำงาน",
+      stopWork: "หยุดพัก",
+      extend: "ขยายเวลา",
+      plannedRange: "ระยะเวลาที่วางแผน",
+      shiftMessage: "ระบบขยับตารางงานลำดับถัดไปให้โดยอัตโนมัติเพื่อให้แผนงานต่อเนื่องกัน",
+      applyExt: "ยืนยันขยายเวลาและปรับแผน"
+    }
+  }[lang];
+
+  const handleToggleSession = (taskId: string) => {
+    setProjects(prev => prev.map(p => {
+      if (p.id !== selectedProjectId) return p;
+      return {
+        ...p,
+        tasks: p.tasks.map(t => {
+          if (t.id !== taskId) return t;
+          if (t.isSessionActive) {
+            const lastLog = t.timeLogs[t.timeLogs.length - 1];
+            return {
+              ...t,
+              isSessionActive: false,
+              timeLogs: t.timeLogs.map(l => l.id === lastLog.id ? { ...l, endTime: new Date().toISOString() } : l)
+            };
+          } else {
+            const newLog: TaskLog = { id: Date.now().toString(), startTime: new Date().toISOString() };
+            return {
+              ...t,
+              isSessionActive: true,
+              timeLogs: [...t.timeLogs, newLog]
+            };
+          }
+        })
+      };
+    }));
+  };
+
+  const handleFinishTask = (taskId: string) => {
+    setProjects(prev => prev.map(p => {
+      if (p.id !== selectedProjectId) return p;
+      return {
+        ...p,
+        tasks: p.tasks.map(t => {
+          if (t.id !== taskId) return t;
+          const now = new Date();
+          const pEnd = new Date(t.plannedEnd);
+          let finalStatus: 'DONE' | 'DELAYED' = 'DONE';
+          if (now > pEnd) finalStatus = 'DELAYED';
+          
+          return {
+            ...t,
+            status: finalStatus,
+            actualEnd: now.toISOString(),
+            isSessionActive: false,
+            timeLogs: t.isSessionActive 
+              ? t.timeLogs.map((l, i) => i === t.timeLogs.length - 1 ? { ...l, endTime: now.toISOString() } : l)
+              : t.timeLogs
+          };
+        })
+      };
+    }));
+    setUploadTaskId(null);
+  };
+
+  const handleExtendDeadline = () => {
+    if (!selectedProjectId || !isExtendingDeadline) return;
+    
+    const newDeadlineDate = new Date(`${extensionDate.date}T${extensionDate.time}`);
+    const newDeadlineISO = newDeadlineDate.toISOString();
+    let hasShiftedAnything = false;
+
+    setProjects(prev => prev.map(p => {
+      if (p.id !== selectedProjectId) return p;
+      
+      const updatedTasks = [...p.tasks];
+      const taskIndex = updatedTasks.findIndex(t => t.id === isExtendingDeadline);
+      if (taskIndex === -1) return p;
+
+      // Update the targeted task
+      updatedTasks[taskIndex] = { ...updatedTasks[taskIndex], plannedEnd: newDeadlineISO };
+
+      // Propagation logic: shift subsequent tasks if they conflict
+      let currentReferenceEnd = newDeadlineDate;
+
+      for (let i = taskIndex + 1; i < updatedTasks.length; i++) {
+        const subTask = updatedTasks[i];
+        const subPlannedStart = new Date(subTask.plannedStart);
+        
+        // If current task's end is after the next task's start, we must shift the next task
+        if (currentReferenceEnd > subPlannedStart) {
+          hasShiftedAnything = true;
+          const originalDuration = new Date(subTask.plannedEnd).getTime() - subPlannedStart.getTime();
+          
+          // Next task starts immediately after the previous one ends
+          const newStart = new Date(currentReferenceEnd.getTime());
+          const newEnd = new Date(newStart.getTime() + originalDuration);
+          
+          updatedTasks[i] = {
+            ...subTask,
+            plannedStart: newStart.toISOString(),
+            plannedEnd: newEnd.toISOString()
+          };
+          
+          // Update reference for the next iteration in the loop
+          currentReferenceEnd = newEnd;
+        }
+      }
+
+      if (hasShiftedAnything) {
+        setShowShiftNotice(true);
+        setTimeout(() => setShowShiftNotice(false), 4000);
+      }
+
+      return { ...p, tasks: updatedTasks };
+    }));
+    
+    setIsExtendingDeadline(null);
+  };
+
+  const handleAddTask = () => {
+    if (!selectedProjectId || !newTask.title) return;
+    const pStart = new Date(`${newTask.startDate}T${newTask.startTime}`).toISOString();
+    const pEnd = new Date(`${newTask.endDate}T${newTask.endTime}`).toISOString();
+    
+    const task: SubTask = {
+      id: Date.now().toString(),
+      title: newTask.title,
+      type: newTask.type,
+      status: 'IN_PROGRESS',
+      plannedStart: pStart,
+      plannedEnd: pEnd,
+      timeLogs: [],
+      attachments: [],
+      isSessionActive: false
+    };
+
+    setProjects(prev => prev.map(p => {
+      if (p.id !== selectedProjectId) return p;
+      return { ...p, tasks: [...p.tasks, task] };
+    }));
+    setIsPlanningTask(false);
+    setNewTask({ title: '', type: 'SINGLE', startDate: new Date().toISOString().split('T')[0], startTime: '09:00', endDate: new Date().toISOString().split('T')[0], endTime: '18:00' });
+  };
+
+  return (
+    <div className="h-full w-full flex flex-col bg-[#F8FAFC] p-4 md:p-8 lg:p-12 overflow-hidden relative">
+      
+      {/* Shift Timeline Notification */}
+      {showShiftNotice && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[300] bg-[#111827] text-white px-8 py-4 rounded-[1.5rem] shadow-2xl flex items-center gap-4 animate-in slide-in-from-top-12 duration-500">
+           <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+             <Zap size={20} fill="currentColor" />
+           </div>
+           <p className="text-[13px] font-black uppercase tracking-widest leading-none">{t.shiftMessage}</p>
+        </div>
+      )}
+
+      <div className="max-w-[1600px] mx-auto w-full overflow-y-auto scrollbar-hide pb-20">
+        <div className="mb-12">
+          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight mb-2">{t.title}</h1>
+          <p className="text-slate-400 text-sm font-medium">{t.subtitle}</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {projects.map((project) => (
+            <div 
+              key={project.id}
+              onClick={() => setSelectedProjectId(project.id)}
+              className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all cursor-pointer group relative"
+            >
+              <div className="flex justify-between items-start mb-8">
+                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
+                  project.status === 'IN PROGRESS' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-blue-50 text-blue-600 border-blue-100'
+                }`}>
+                  {project.status}
+                </span>
+                <Layers className="text-slate-100 group-hover:text-blue-500 transition-colors" size={24} />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 mb-4 tracking-tight leading-tight">{project.title}</h3>
+              <p className="text-sm text-slate-400 font-medium leading-relaxed mb-12 line-clamp-2">{project.description}</p>
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-[11px] font-black text-slate-300 uppercase tracking-widest">{project.date}</span>
+                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                  <ArrowRight size={18} />
+                </div>
+              </div>
+            </div>
+          ))}
+          <button 
+            onClick={() => setIsCreatingProject(true)}
+            className="border-4 border-dashed border-slate-100 rounded-[2.5rem] p-10 flex flex-col items-center justify-center gap-4 text-slate-300 hover:bg-white hover:border-blue-200 hover:text-blue-500 transition-all group min-h-[320px]"
+          >
+            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
+              <Plus size={32} />
+            </div>
+            <span className="text-xs font-black uppercase tracking-widest">{t.createNew}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* --- PROJECT DETAIL MODAL --- */}
+      {selectedProject && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-6xl rounded-[3.5rem] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            
+            <div className="p-8 md:p-10 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 bg-blue-600 text-white rounded-[1.75rem] flex items-center justify-center shadow-xl shadow-blue-500/20">
+                  <Layers size={32} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-[9px] font-black text-amber-50 uppercase tracking-widest bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">{selectedProject.status}</span>
+                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">{t.details}</span>
+                  </div>
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none">{selectedProject.title}</h2>
+                </div>
+              </div>
+              <button onClick={() => setSelectedProjectId(null)} className="w-12 h-12 flex items-center justify-center text-slate-300 hover:text-slate-900 rounded-full hover:bg-slate-50 transition-all"><X size={32} /></button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-10 scrollbar-hide space-y-12 bg-white">
+              <section>
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">{t.projectBrief}</h4>
+                <p className="text-base text-slate-600 font-medium leading-relaxed max-w-3xl">{selectedProject.description}</p>
+              </section>
+
+              <section>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+                  <div>
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">{t.taskMgmt}</h4>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">{t.taskTimeline}</h3>
+                  </div>
+                  <button onClick={() => setIsPlanningTask(true)} className="flex items-center gap-3 px-8 py-3.5 bg-blue-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:bg-blue-700 active:scale-95 transition-all">
+                    <Plus size={18} strokeWidth={3} /> {t.planTask}
+                  </button>
+                </div>
+
+                <div className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-left bg-slate-50/40">
+                        <th className="py-6 px-10 text-[10px] font-black text-slate-300 uppercase tracking-widest">TASK DETAILS</th>
+                        <th className="py-6 px-4 text-[10px] font-black text-slate-300 uppercase tracking-widest">PLAN</th>
+                        <th className="py-6 px-4 text-[10px] font-black text-slate-300 uppercase tracking-widest">TIME TRACKING</th>
+                        <th className="py-6 px-4 text-[10px] font-black text-slate-300 uppercase tracking-widest">STATUS</th>
+                        <th className="py-6 px-10 text-[10px] font-black text-slate-300 uppercase tracking-widest text-right">ACTION</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {selectedProject.tasks.map((task) => {
+                        const totalHours = calculateTotalWorkTime(task.timeLogs);
+                        const isOverdue = !task.actualEnd && new Date() > new Date(task.plannedEnd);
+                        const isDone = task.status === 'DONE' || task.status === 'DELAYED';
+
+                        return (
+                          <tr key={task.id} className="group hover:bg-blue-50/10 transition-colors">
+                            <td className="py-8 px-10">
+                              <div className="flex items-center gap-5">
+                                <div className={`w-12 h-12 rounded-full border-4 flex items-center justify-center ${isDone ? 'border-blue-50 bg-blue-50 text-blue-600' : 'border-amber-50 bg-amber-50 text-amber-500'}`}>
+                                  {task.type === 'CONTINUE' ? <Repeat size={18} /> : <Circle size={18} strokeWidth={3} />}
+                                </div>
+                                <div>
+                                  <h5 className="text-sm font-black text-slate-900 leading-none mb-1">{task.title}</h5>
+                                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{task.type}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-8 px-4">
+                              <div className="flex flex-col gap-1.5">
+                                <div className="flex items-center gap-2 text-slate-500 font-bold text-[12px]">
+                                  <CalendarDays size={14} className="text-slate-300" />
+                                  <span>{new Date(task.plannedEnd).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-slate-300 font-bold text-[10px] uppercase">
+                                  <Clock size={12} />
+                                  <span>{new Date(task.plannedEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-8 px-4">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${task.isSessionActive ? 'bg-blue-600 text-white animate-pulse' : 'bg-slate-50 text-slate-400'}`}>
+                                  <Timer size={18} />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-[12px] font-black text-slate-900">{totalHours}H</span>
+                                  <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Logged Time</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-8 px-4">
+                              {isDone ? (
+                                <div className="flex flex-col gap-1">
+                                  <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg w-fit ${
+                                    new Date(task.actualEnd!) <= new Date(task.plannedEnd) ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                                  }`}>
+                                    {new Date(task.actualEnd!) <= new Date(task.plannedEnd) ? t.onTime : t.delayed}
+                                  </span>
+                                  <span className="text-[9px] font-bold text-slate-300 uppercase">{new Date(task.actualEnd!).toLocaleDateString()}</span>
+                                </div>
+                              ) : (
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${isOverdue ? 'text-rose-500' : 'text-blue-500'}`}>
+                                  {isOverdue ? t.delayed : t.inProgress}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-8 px-10 text-right">
+                              <div className="flex items-center justify-end gap-3">
+                                {!isDone && (
+                                  <>
+                                    <button 
+                                      onClick={() => handleToggleSession(task.id)}
+                                      className={`p-3 rounded-xl transition-all shadow-sm ${task.isSessionActive ? 'bg-rose-50 text-rose-600 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                                      title={task.isSessionActive ? t.stopWork : t.startWork}
+                                    >
+                                      {task.isSessionActive ? <Square size={16} fill="currentColor"/> : <Play size={16} fill="currentColor"/>}
+                                    </button>
+                                    <button 
+                                      onClick={() => {
+                                        const end = new Date(task.plannedEnd);
+                                        setExtensionDate({ date: end.toISOString().split('T')[0], time: end.toTimeString().slice(0,5) });
+                                        setIsExtendingDeadline(task.id);
+                                      }}
+                                      className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
+                                      title={t.extend}
+                                    >
+                                      <Edit2 size={16} />
+                                    </button>
+                                    <button 
+                                      onClick={() => setUploadTaskId(task.id)}
+                                      className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-600 transition-all"
+                                    >
+                                      {t.finishBtn}
+                                    </button>
+                                  </>
+                                )}
+                                {isDone && (
+                                  <div className="flex items-center gap-2 text-emerald-500 font-black text-[11px] uppercase">
+                                     <div className="w-8 h-8 rounded-full border-2 border-emerald-500 flex items-center justify-center shadow-sm"><CheckCircle2 size={18} strokeWidth={3} /></div>
+                                     <span>Finished</span>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+
+            <div className="p-8 md:p-10 bg-slate-50/50 border-t border-slate-100 flex justify-end">
+              <button onClick={() => setSelectedProjectId(null)} className="px-16 py-4 bg-[#111827] text-white rounded-[1.75rem] text-sm font-black uppercase hover:bg-blue-600 shadow-2xl active:scale-95 transition-all">{t.saveChanges}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- EXTEND DEADLINE MODAL (Cascade Logic) --- */}
+      {isExtendingDeadline && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-[#0B0F19]/80 backdrop-blur-xl animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl space-y-10 animate-in zoom-in-95 duration-300">
+              <div className="flex items-center gap-5">
+                 <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-[1.75rem] flex items-center justify-center shadow-sm">
+                    <Clock size={32}/>
+                 </div>
+                 <div>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{t.extend}</h3>
+                    <p className="text-slate-400 text-[11px] font-black uppercase tracking-widest mt-2">{t.plannedRange}</p>
+                 </div>
+              </div>
+              
+              <div className="bg-blue-50/50 p-6 rounded-[1.5rem] border border-blue-100 flex items-start gap-4">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                   <Zap size={18} className="text-blue-600" fill="currentColor" />
+                </div>
+                <p className="text-[11px] text-blue-700 leading-relaxed font-bold italic">
+                  Extending this task will automatically shift any waiting tasks to start immediately after the new completion target, keeping your project "on track."
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                 <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase mb-3 block">New Target Date</label>
+                    <div className="relative">
+                      <input type="date" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:ring-8 focus:ring-blue-500/5 focus:bg-white transition-all appearance-none" value={extensionDate.date} onChange={e => setExtensionDate({...extensionDate, date: e.target.value})} />
+                      <Calendar size={16} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                    </div>
+                 </div>
+                 <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase mb-3 block">New Target Time</label>
+                    <div className="relative">
+                      <input type="time" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:ring-8 focus:ring-blue-500/5 focus:bg-white transition-all appearance-none" value={extensionDate.time} onChange={e => setExtensionDate({...extensionDate, time: e.target.value})} />
+                      <Clock size={16} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                    </div>
+                 </div>
+              </div>
+
+              <div className="flex gap-4">
+                 <button onClick={() => setIsExtendingDeadline(null)} className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-3xl font-black text-xs uppercase tracking-widest">{t.cancel}</button>
+                 <button onClick={handleExtendDeadline} className="flex-[2] py-5 bg-blue-600 text-white rounded-3xl font-black text-sm uppercase tracking-widest shadow-2xl shadow-blue-500/20 active:scale-95 transition-all">
+                    {t.applyExt}
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* --- TASK PLANNING MODAL --- */}
+      {isPlanningTask && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-xl rounded-[3rem] p-10 shadow-2xl space-y-10">
+              <div className="flex items-center justify-between">
+                 <h3 className="text-3xl font-black text-slate-900 tracking-tight">{t.planTask}</h3>
+                 <button onClick={() => setIsPlanningTask(false)} className="text-slate-300 hover:text-slate-900 transition-colors"><X size={32}/></button>
+              </div>
+              <div className="space-y-8">
+                 <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase mb-3 block">{t.taskTitle}</label>
+                    <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:ring-8 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="Define system architecture..." value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})} />
+                 </div>
+                 <div className="grid grid-cols-2 gap-6">
+                    <div>
+                       <label className="text-[10px] font-black text-slate-400 uppercase mb-3 block">{t.taskType}</label>
+                       <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                          <button onClick={() => setNewTask({...newTask, type: 'SINGLE'})} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${newTask.type === 'SINGLE' ? 'bg-white text-blue-600 shadow-md' : 'text-slate-400'}`}>SINGLE</button>
+                          <button onClick={() => setNewTask({...newTask, type: 'CONTINUE'})} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${newTask.type === 'CONTINUE' ? 'bg-white text-blue-600 shadow-md' : 'text-slate-400'}`}>CONTINUE</button>
+                       </div>
+                    </div>
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100">
+                    <div className="space-y-4">
+                       <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{t.taskDateStart}</p>
+                       <input type="date" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold" value={newTask.startDate} onChange={e => setNewTask({...newTask, startDate: e.target.value})} />
+                       <input type="time" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold" value={newTask.startTime} onChange={e => setNewTask({...newTask, startTime: e.target.value})} />
+                    </div>
+                    <div className="space-y-4">
+                       <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">{t.taskDateEnd}</p>
+                       <input type="date" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold" value={newTask.endDate} onChange={e => setNewTask({...newTask, endDate: e.target.value})} />
+                       <input type="time" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold" value={newTask.endTime} onChange={e => setNewTask({...newTask, endTime: e.target.value})} />
+                    </div>
+                 </div>
+              </div>
+              <div className="flex gap-4">
+                 <button onClick={() => setIsPlanningTask(false)} className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-3xl font-black text-xs uppercase">{t.cancel}</button>
+                 <button onClick={handleAddTask} className="flex-[2] py-5 bg-blue-600 text-white rounded-3xl font-black text-sm uppercase shadow-2xl shadow-blue-500/20">{t.confirmTask}</button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* --- FINALIZE UPLOAD MODAL --- */}
+      {uploadTaskId && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-lg rounded-[3.5rem] p-12 shadow-2xl space-y-10 animate-in zoom-in-95 duration-300">
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-[2rem] flex items-center justify-center shadow-sm">
+                   <Upload size={32} />
+                </div>
+                <div>
+                   <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{t.uploadTitle}</h3>
+                   <p className="text-slate-400 text-[11px] font-black uppercase tracking-widest mt-2">{t.uploadSub}</p>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full py-16 border-4 border-dashed border-slate-100 rounded-[3rem] text-slate-400 font-black text-xs uppercase tracking-[0.2em] hover:border-blue-200 hover:text-blue-600 transition-all flex flex-col items-center justify-center gap-4 group"
+              >
+                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
+                   <Plus size={32}/>
+                </div>
+                Drop proof files here
+              </button>
+              <input type="file" ref={fileInputRef} className="hidden" />
+
+              <div className="flex gap-4">
+                 <button onClick={() => setUploadTaskId(null)} className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-3xl font-black text-xs uppercase tracking-widest">{t.cancel}</button>
+                 <button 
+                  onClick={() => handleFinishTask(uploadTaskId)}
+                  className="flex-[2] py-5 bg-emerald-500 text-white rounded-3xl font-black text-sm uppercase tracking-widest shadow-2xl shadow-emerald-100 hover:bg-emerald-600"
+                 >
+                   {t.finishBtn}
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* --- CREATE PROJECT MODAL --- */}
+      {isCreatingProject && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-xl rounded-[3rem] p-10 shadow-2xl space-y-10 animate-in zoom-in-95 duration-300">
+              <div className="flex items-center justify-between">
+                 <h3 className="text-3xl font-black text-slate-900 tracking-tight">{t.createNew}</h3>
+                 <button onClick={() => setIsCreatingProject(false)} className="text-slate-300 hover:text-slate-900 transition-colors"><X size={32}/></button>
+              </div>
+              <div className="space-y-6">
+                 <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase mb-3 block">Project Title</label>
+                    <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none" value={newProject.title} onChange={e => setNewProject({...newProject, title: e.target.value})} />
+                 </div>
+                 <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase mb-3 block">Description</label>
+                    <textarea className="w-full bg-slate-50 border border-slate-200 rounded-[2rem] px-6 py-5 text-sm h-32 resize-none" value={newProject.description} onChange={e => setNewProject({...newProject, description: e.target.value})} />
+                 </div>
+              </div>
+              <div className="flex gap-4">
+                 <button onClick={() => setIsCreatingProject(false)} className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-3xl font-black text-xs uppercase">{t.cancel}</button>
+                 <button onClick={() => {
+                   setProjects([{ id: Date.now().toString(), title: newProject.title, description: newProject.description, status: 'TODO', date: new Date().toISOString().split('T')[0], tasks: [] }, ...projects]);
+                   setIsCreatingProject(false);
+                 }} className="flex-[2] py-5 bg-blue-600 text-white rounded-3xl font-black text-sm uppercase tracking-widest shadow-2xl shadow-blue-500/20">Initialize Project</button>
+              </div>
+           </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AssignmentPage;
